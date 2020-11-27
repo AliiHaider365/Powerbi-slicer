@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2019 Jan Pieter Posthuma / DataScenarios
+ * Copyright (c) 2019 wizeguy
  *
  * All rights reserved.
  *
