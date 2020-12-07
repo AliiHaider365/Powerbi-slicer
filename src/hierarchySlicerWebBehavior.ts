@@ -32,9 +32,11 @@ import { interactivityBaseService } from "powerbi-visuals-utils-interactivityuti
 import { IFilterColumnTarget, IFilterTarget, Selector } from "powerbi-models";
 import { select, event, Selection } from "d3-selection";
 import { isEqual } from "lodash-es";
+import IViewport = powerbi.IViewport;
 
 import * as interfaces from "./interfaces";
 import * as settings from "./hierarchySlicerSettings";
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import IFilter = powerbi.IFilter;
@@ -51,7 +53,7 @@ import HierarchySlicerProperties = interfaces.HierarchySlicerProperties;
 import HierarchySlicerSettings = settings.HierarchySlicerSettings;
 import { SelectionType } from "./enums";
 import { persistFilter, applyFilter, getCommonLevel } from "./utils";
-
+import { HierarchySlicer } from "./hierarchySlicer";
 export class HierarchySlicerWebBehavior implements IInteractiveBehavior {
     private hostServices: IVisualHost;
     private expanders: Selection<any, any, any, any>;
@@ -68,10 +70,17 @@ export class HierarchySlicerWebBehavior implements IInteractiveBehavior {
     private spinnerTimeoutId?: number;
     private filterInstance: any[] = [];
     private ctrlPressed: boolean = false;
+    private viewport: IViewport;
+    private data : VisualUpdateOptions;
+
     private hidden: boolean = false;
     private show: boolean = true;
     private clickhandler:  ()=> void;
-
+    private onmouseleave:  ()=> void;
+    
+    // constructor(options: VisualConstructorOptions) {
+      
+    // }
 
     public get FilterInstance() {
         return this.filterInstance;
@@ -109,6 +118,7 @@ export class HierarchySlicerWebBehavior implements IInteractiveBehavior {
             this.persistExpand();
         });
 
+        // console.log(options.behavior + 'sdasdasdadsa')
         expanders.on("mouseover", (d: IHierarchySlicerDataPoint, i: number) => {
             if (d.selectable) {
                 d.mouseOver = true;
@@ -302,32 +312,50 @@ export class HierarchySlicerWebBehavior implements IInteractiveBehavior {
             this.spinnerTimeoutId = undefined;
         });
 
+        let element: HTMLElement = document.getElementsByClassName('slicerBody')[0] as HTMLElement
+        let row: HTMLElement = document.getElementsByClassName('slicerItemContainerExpander')[0] as HTMLElement
+        let ul: HTMLElement = document.getElementsByClassName('scrollRegion')[0] as HTMLElement
+        let expendericon: HTMLElement = document.getElementsByClassName('display')[0].firstElementChild as HTMLElement
         this.clickhandler =()=>{
-                let element: HTMLElement = document.getElementsByClassName('slicerBody')[0] as HTMLElement
-                let row: HTMLElement = document.getElementsByClassName('slicerText')[0] as HTMLElement
-                let icon: HTMLElement = document.getElementsByClassName('display')[0].firstElementChild as HTMLElement
-    
                if(this.hidden){
                    element.style.display = 'none';
-                   icon.style.transform = 'rotate(0deg)'
-                
+                   expendericon.style.transform = 'rotate(0deg)'
+                //    element.remove();
                }else{
                 element.style.display = 'block'
-                icon.style.transform = 'rotate(90deg)'
+                expendericon.style.transform = 'rotate(90deg)'
+                // ul.click()
+                // this.hierarchySlicer.updateSlicerBodyDimensions()
+                // row.style.width = '100vw';
+                row.click()
+                row.click()
+                // console.log(this.viewport.height)
                 if(this.show){
-                    row.click()
-                    console.log('syyyyyyyyyyy')
                     this.show= false;
                 }
                } 
                this.hidden =!this.hidden
         }
-
-        
-
         let icon: HTMLElement = document.getElementsByClassName('display')[0] as HTMLElement
         icon.onclick = this.clickhandler ;
         slicerHeaderText.on("click", this.clickhandler );
+        
+        this.onmouseleave=()=>{
+
+            if (this.hidden) {
+                element.style.display = 'none';
+
+                expendericon.style.transform = 'rotate(0deg)'
+
+                this.hidden =!this.hidden;
+                // console.log(this.hidden)
+            }
+        }
+        document.onmouseleave = this.onmouseleave;
+        
+        
+
+        
         // d => {
         //     let element: HTMLElement = document.getElementsByClassName('slicerBody')[0] as HTMLElement
         //     let row: HTMLElement = document.getElementsByClassName('slicerText')[0] as HTMLElement

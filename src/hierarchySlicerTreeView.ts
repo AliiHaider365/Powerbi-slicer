@@ -63,7 +63,7 @@ export class HierarchySlicerTreeView implements IHierarchySlicerTreeView {
      * in the list view that triggers a loadMoreData call.
      */
     private static loadMoreDataThreshold = 0.8;
-    private static defaultRowHeight = 1;
+    private static defaultRowHeight = 10;
 
     public constructor(options: IHierarchySlicerTreeViewOptions) {
         // make a copy of options so that it is not modified later by caller
@@ -129,6 +129,7 @@ export class HierarchySlicerTreeView implements IHierarchySlicerTreeView {
     public isScrollbarVisible(): boolean {
         const bodyHeight = (<HTMLElement>this.options.baseContainer.node()).offsetHeight;
         const scrollHeight = (<HTMLElement>this.scrollContainer.node()).offsetHeight;
+        // console.log(bodyHeight1,scrollHeight1)
         return bodyHeight < scrollHeight;
     }
 
@@ -234,16 +235,17 @@ export class HierarchySlicerTreeView implements IHierarchySlicerTreeView {
             .exit()
             .call((d) => options.exit(d))
             .remove();
-        if (loadMoreData) options.loadMoreData(); // && visibleRows !== totalRows && position1 >= totalRows * HierarchySlicerTreeView.loadMoreDataThreshold)
+        if (loadMoreData) options.loadMoreData() // && visibleRows !== totalRows && position1 >= totalRows * HierarchySlicerTreeView.loadMoreDataThreshold)
     }
 
     private setTotalRows(): void {
         let data = this._data;
         this._totalRows = data ? data.length : 0;
+        // console.log(this._totalRows + "tottal")
     }
 
     private getVisibleRows(): number {
-        const minimumVisibleRows = 1;
+        const minimumVisibleRows = 10;
         const options = this.options;
         const rowHeight = options.rowHeight;
         const containerHeight = this.getContainerHeight();
@@ -251,7 +253,6 @@ export class HierarchySlicerTreeView implements IHierarchySlicerTreeView {
         if (!rowHeight || rowHeight < 1) {
             return minimumVisibleRows;
         }
-
         const viewportRowCount = containerHeight / rowHeight;
         if (this.options.scrollEnabled) {
             return Math.min(Math.ceil(viewportRowCount), this._totalRows) || minimumVisibleRows;

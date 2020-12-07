@@ -8,25 +8,40 @@
 .row {
     // background-color: #ccc;
     min-width: fit-content !important;
-    display: block !important;
+    // display: block !important;
     justify-content: flex-start !important;
 }
 .display {
-    margin-top: 2px;
-    margin-right: 2px;
+    margin-top: 4px;
+    margin-right: 4px;
+    opacity: 1 !important;
 }
 .slicerItemContainer {
     //     display: inline !important;
     //     justify-content: flex-start !important;
     width: fit-content !important ;
+    box-sizing: border-box;
+    white-space: nowrap;
+    cursor: pointer;
+    display: -webkit-box !important;
+    display: flex !important;
+    justify-content: space-between;
+    overflow: hidden;
     // background-color: rgb(153, 41, 41);
-    display: inline-block;
+    // display: inline-block;
     position: relative;
 }
 .slicerItemContainerChild {
     //     justify-content: flex-start !important;
     min-width: fit-content !important;
     padding-right: 19px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    cursor: pointer;
+    display: -webkit-box !important;
+    display: flex !important;
+    justify-content: space-between;
+    overflow: hidden;
     // background-color: rgb(39, 122, 53);
 }
 .slicerText {
@@ -41,11 +56,12 @@
 }
 .slicerBody {
     display: none;
-    position: absolute;
-    visibility: visible;
-    clear: both;
-    height: 1000px;
-    overflow: visible;
+    // overflow: s;
+    // position: absolute;
+    // visibility: visible;
+    // clear: both;
+    // height: 100%;
+    // overflow: scroll;
 }
 .slicerItemContainerExpander {
     position: absolute;
@@ -383,6 +399,8 @@ html[dir="rtl"] .powerbi-spinner:not(.dotsLoader) .spinner {
     list-style: none;
     box-sizing: border-box;
     // min-width: fit-content;
+    // overflow: scroll;
+    // transform: translate(0px, 0px) !important;
 }
 .slicerItemContainerChild {
     // padding-left: 30px !important;
@@ -765,7 +783,7 @@ textarea {
 .simplebar-track {
     z-index: 1;
     position: absolute;
-    right: 0;
+    right: 5px;
     bottom: 0;
     pointer-events: none;
 }
@@ -774,7 +792,7 @@ textarea {
     position: absolute;
     right: 2px;
     width: 7px;
-    min-height: 10px;
+    height: 10px;
 }
 
 .simplebar-scrollbar:before {
@@ -842,6 +860,6 @@ textarea {
     visibility: hidden;
     height: 500px;
     width: 500px;
-    overflow-y: hidden;
+    overflow-y: scroll;
     overflow-x: scroll;
 }

@@ -88,7 +88,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import VisualObjectInstance = powerbi.VisualObjectInstance;
 import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
 import VisualObjectInstanceEnumeration = powerbi.VisualObjectInstanceEnumeration;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import ISelectionId = powerbi.visuals.plugins.IVisualPlugin;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -110,6 +110,7 @@ const Icons = Graphics.Icons;
 
 import "../style/hierarchySlicer.less";
 import { threadId } from "worker_threads";
+import { event } from 'jquery';
 
 export class HierarchySlicer implements IVisual {
     private root: HTMLElement;
@@ -129,6 +130,7 @@ export class HierarchySlicer implements IVisual {
     private rowHeight: number;
     private events: IVisualEventService;
     private isInFocus: boolean;
+    private iSelectionId: ISelectionId;
     private slicerContainer: Selection<any, any, any, any>;
     private slicerHeaderContainer: Selection<any, any, any, any>;
     private slicerHeader: Selection<any, any, any, any>;
@@ -139,6 +141,7 @@ export class HierarchySlicer implements IVisual {
     private selectionManager: ISelectionManager;
     private tooltipServiceWrapper: ITooltipServiceWrapper;
     private searchFilter: SearchFilter = SearchFilter.Wildcard;
+    // private updateslicer : thi() ;
 
     public static DefaultFontFamily: string = "Segoe UI, Tahoma, Verdana, Geneva, sans-serif";
     public static DefaultFontSizeInPt: number = 11;
@@ -182,12 +185,11 @@ export class HierarchySlicer implements IVisual {
 
         this.events = options.host.eventService;
     }
-
     private init(options: VisualUpdateOptions): void {
+            
         this.viewport = options.viewport;
-        // console.log(HierarchySlicer)
         this.slicerContainer = select(this.root).append("div").classed(HierarchySlicer.Container.className, true)
-        
+        // console.log(options.viewport)
 
         // a11y support: WIP
         // this.slicerContainer.on("keypress", (e) => {
@@ -206,13 +208,13 @@ export class HierarchySlicer implements IVisual {
         this.renderHeader(this.slicerContainer);
 
         const bodyViewPort = this.getBodyViewport(this.viewport);
-        console.log(bodyViewPort)
+        
         this.slicerBody = this.slicerContainer
             .append("div")
             .classed(HierarchySlicer.Body.className, true)
             .style("height", PixelConverter.toString(bodyViewPort.height))
             .style("width", PixelConverter.toString(bodyViewPort.width))              
-        this.treeView = this.createTreeView();
+           this.treeView = this.createTreeView();
     }
 
     private createTreeView(): IHierarchySlicerTreeView {
@@ -254,15 +256,15 @@ export class HierarchySlicer implements IVisual {
 
         return HierarchySlicerTreeViewFactory.createListView(treeViewOptions);
     }
-
+    
     private renderHeader(rootContainer: Selection<any, any, any, any>): void {
         const headerButtonData = [
-            {
-                title: "Clear",
-                class: HierarchySlicer.Clear.className,
-                icon: (e: HTMLElement) => Graphics.CLEARALL(e),
-                level: 0,
-            },
+            // {
+            //     title: "Clear",
+            //     class: HierarchySlicer.Clear.className,
+            //     icon: (e: HTMLElement) => Graphics.CLEARALL(e),
+            //     level: 0,
+            // },
             {
                 title: "Expand all",
                 class: "display",
@@ -287,11 +289,12 @@ export class HierarchySlicer implements IVisual {
             .enter()
             .append("div")
             .classed(HierarchySlicer.Icon.className, true)
+            .style("opacity", '1 !important')
             // .classed("hiddenicon", !this.settings.mobile.zoomed)
             .attr("title", (d) => d.title)
             .each(function (d) {
                 const e: HTMLElement = <HTMLElement>this;
-                e.classList.add(d.class);
+                e.classList.add(d.class)
                 d.icon(e);
             });
 
@@ -449,7 +452,7 @@ export class HierarchySlicer implements IVisual {
     private updateSettings(): void {
         this.isHighContrast = this.colorPalette.isHighContrast; // additional assignment for testing purpose
         this.settings.header.defaultTitle = this.dataView && this.dataView.metadata.columns[0].displayName;
-        this.updateMobileSettings();
+        // this.updateMobileSettings();
         this.updateSelectionStyle();
         this.updateFontStyle();
         this.updateHeaderStyle();
@@ -514,10 +517,10 @@ export class HierarchySlicer implements IVisual {
             this.settings.search.textSize * (this.settings.mobile.zoomed ? 1 + this.settings.mobile.enLarge / 100 : 1);
     }
 
-    private updateMobileSettings(): void {
-        this.settings.mobile.zoomed =
-            this.settings.mobile.enable || (this.isInFocus && this.settings.mobile.focus) || false;
-    }
+    // private updateMobileSettings(): void {
+    //     this.settings.mobile.zoomed =
+    //         this.settings.mobile.enable || (this.isInFocus && this.settings.mobile.focus) || false;
+    // }
 
     private updateSlicerBodyDimensions(): void {
         let slicerViewport: IViewport = this.getBodyViewport(this.viewport);
@@ -684,9 +687,13 @@ export class HierarchySlicer implements IVisual {
                 .style(
                     "border-width",
                     this.getBorderWidth(this.settings.header.outline, this.settings.header.outlineWeight)
-                )
+                )  
+                .style("max-width", () =>
+                `calc(100vw) `)
+                .style("padding-right", '20px')
                 .style("font-size", `${this.settings.header.textSizeZoomed}pt`)
                 .style("font-family", this.settings.header.fontFamily)
+                .style("font-weight", this.settings.header.fontWeight)
                 .style("font-weight", this.settings.header.fontWeight)
                 .style("font-style", () => {
                     switch (this.settings.header.fontStyle) {
@@ -714,7 +721,6 @@ export class HierarchySlicer implements IVisual {
                 .style("opacity", (d: any) => (data.levels >= d.level ? "1" : "0"));
 
             this.slicerBody.classed("slicerBody", true);
-            console.log(this.settings.items.textSizeZoomed,mobileScale)
             // Item Container
             rowSelection
                 .selectAll(HierarchySlicer.ItemContainer.selectorName)
@@ -736,7 +742,7 @@ export class HierarchySlicer implements IVisual {
                 // .style("width", (d: IHierarchySlicerDataPoint) =>
                 //     data.levels === 0
                 //         ? ``
-                //         : `calc(100vw - ${(d.level + 1) * mobileScale * this.settings.items.textSizeZoomed}px)`
+                //         : `calc(100vw - ${(d.level + 1) * mobileScale * this.settings.items.textSizeZoomed}px) `
                 // )
                
             //     .style("margin-left", (d: IHierarchySlicerDataPoint) =>
@@ -826,6 +832,9 @@ export class HierarchySlicer implements IVisual {
                 .style("font-size", `${this.settings.items.textSizeZoomed}pt`)
                 .style("font-family", this.settings.items.fontFamily)
                 .style("font-weight", this.settings.items.fontWeight)
+                    .style("max-width", (d: IHierarchySlicerDataPoint) =>
+                    `calc(100vw - 75px) `
+                )
                 .style("font-style", () => {
                     switch (this.settings.items.fontStyle) {
                         case FontStyle.Normal:
@@ -835,13 +844,6 @@ export class HierarchySlicer implements IVisual {
                     }
                     return "normal";
                 })
-                // .each(function (d) {
-                //     select(this)
-                //         .append("span")
-                //         .classed("hdnsfudhnf", true)
-                //         .classed("icon-left", true)
-                //         .style("display", "visible");
-                // })
 
             // Item Tooltip Icon
             //const tooltipIcons =
